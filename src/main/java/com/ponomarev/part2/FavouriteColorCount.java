@@ -3,10 +3,7 @@ package com.ponomarev.part2;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Named;
-import org.apache.kafka.streams.kstream.ValueMapper;
+import org.apache.kafka.streams.kstream.*;
 
 import java.util.Properties;
 
@@ -15,6 +12,8 @@ public class FavouriteColorCount {
     private final static String USER_COLORS_INPUT_STREAM = "user-colors-input";
     private final static String USER_COLORS_OUTPUT_STREAM = "user-colors-output";
 
+    private final static String USER_COLORS_INPUT_STREAM_2 = USER_COLORS_INPUT_STREAM + "-2";
+    private final static String USER_COLORS_OUTPUT_STREAM_2 = USER_COLORS_OUTPUT_STREAM + "-2";
 
     private Properties config = new Properties();
     private StreamsBuilder streamsBuilder = new StreamsBuilder();
@@ -64,6 +63,37 @@ public class FavouriteColorCount {
                 .count(Named.as("color-count"))
                 .toStream()
                 .to(USER_COLORS_OUTPUT_STREAM);
+
+        Topology userColorTopology = streamsBuilder.build();
+        KafkaStreams kafkaStreams = new KafkaStreams(userColorTopology, config);
+        kafkaStreams.start();
+
+        // shutdown hook to correctly close the streams application
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
+    }
+
+    /**
+     * The option taking into account the previous choices of people, that is,
+     * in this option, a person can re-choose a color and one color will have 1 less value,
+     * and the other more
+     */
+    public void executeWithDynamicChooseChange() {
+        KStream<String, String> userColorsStream = streamsBuilder.stream(USER_COLORS_INPUT_STREAM_2, Consumed.with(Serdes.String(), Serdes.String()));
+
+        userColorsStream
+                .filter((key, value) -> value.matches("\\w+,\\w+"))
+                .map((key, value) -> KeyValue.pair(value.split(",")[0], value.split(",")[1]))
+                .filter((key, value) -> value.equals("green") || value.equals("blue") || value.equals("red"))
+                .to("users-with-colors-table");
+
+        // Intermediate writing and reading from the table to take into account all data
+        KTable<String, String> userColorTable = streamsBuilder.table("users-with-colors-table");
+
+        userColorTable
+                .groupBy((user, color) -> new KeyValue<>(color, color))
+                .count(Named.as("color-rating"))
+                .toStream()
+                .to(USER_COLORS_OUTPUT_STREAM_2);
 
         Topology userColorTopology = streamsBuilder.build();
         KafkaStreams kafkaStreams = new KafkaStreams(userColorTopology, config);
