@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="WordCountAppTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-11-04T08:54:20" hostname="KBP1-LHP-A05473" time="0.618">
+  <properties/>
+  <testcase name="dummyTest" classname="WordCountAppTest" time="0.618"/>
+  <system-out><![CDATA[INFO Opening store KSTREAM-AGGREGATE-STATE-STORE-0000000005 in regular mode (org.apache.kafka.streams.state.internals.RocksDBTimestampedStore:100) 
+INFO topology-test-driver State store KSTREAM-AGGREGATE-STATE-STORE-0000000005 did not find checkpoint offset, hence would default to the starting offset at changelog test-application-KSTREAM-AGGREGATE-STATE-STORE-0000000005-changelog-0 (org.apache.kafka.streams.processor.internals.ProcessorStateManager:254) 
+INFO stream-thread [Test worker] task [0_0] Initialized (org.apache.kafka.streams.processor.internals.StreamTask:215) 
+INFO stream-thread [Test worker] task [0_0] Restored and ready to run (org.apache.kafka.streams.processor.internals.StreamTask:236) 
+NEW MESSAGE: K - null V - asd asd asd
+INFO stream-thread [Test worker] task [0_0] Suspended running (org.apache.kafka.streams.processor.internals.StreamTask:274) 
+INFO topology-test-driver Closing record collector clean (org.apache.kafka.streams.processor.internals.RecordCollectorImpl:255) 
+INFO stream-thread [Test worker] task [0_0] Closed clean (org.apache.kafka.streams.processor.internals.StreamTask:502) 
+INFO stream-thread [Test worker] Deleting state directory 0_0 for task 0_0 as user calling cleanup. (org.apache.kafka.streams.processor.internals.StateDirectory:337) 
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -37,6 +37,15 @@ public class WordCount {
     }
 
     public void execute() {
+        Topology topology = createTopology();
+        KafkaStreams kafkaStreams = new KafkaStreams(topology, config);
+        kafkaStreams.start();
+
+        // shutdown hook to correctly close the streams application
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
+    }
+
+    public Topology createTopology() {
         KStream<String, String> stream = streamsBuilder.stream(WORD_COUNT_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
 
         stream.peek((key, value) -> System.out.println("NEW MESSAGE: K - " + key + " V - " + value))
@@ -48,12 +57,7 @@ public class WordCount {
                 .toStream()
                 .to("word-count-output");
 
-        Topology topology = streamsBuilder.build();
-        KafkaStreams kafkaStreams = new KafkaStreams(topology, config);
-        kafkaStreams.start();
-
-        // shutdown hook to correctly close the streams application
-        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
+        return streamsBuilder.build();
     }
 
 }
